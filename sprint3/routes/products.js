@@ -1,10 +1,11 @@
 import express from 'express';
 import { assert } from 'superstruct';
 import { CreateDto, UpdateDto } from './products.dto.js';  // UpdateDto 추가
-import { PrismaClient } from '@prisma/client';
+import { db } from 'utils/db.js';
+import { validatePagination } from '../utils/validatePagination.js';
 import asyncHandler from 'utils/asyncHandler.js';
+import createError from 'http-errors';
 
-const prisma = new PrismaClient();
 const router = express.Router();
 
 // 상품 목록 조회
@@ -13,13 +14,23 @@ router
   .get(
     asyncHandler(async (req, res) => {
       const { offset = 0, limit = 10, order = 'recent', search = '' } = req.query;
-      let orderBy = { createdAt: 'desc' };
-      if (order === 'oldst') {
-        orderBy = { createdAt: 'asc' };
+       const { parsedOffset, parsedLimit } = validatePagination(offset, limit);
+
+      let orderBy;
+
+      switch (order) {
+        case 'oldst':
+          orderBy = { createdAt: 'asc' };
+          break;
+        case 'recent':
+        default:
+          orderBy = { createdAt: 'desc' };
+          break;
       }
-      const products = await prisma.product.findMany({
-        skip: parseInt(offset),
-        take: parseInt(limit),
+
+      const products = await db.product.findMany({
+        skip: parsedOffset,
+        take: parsedLimit,
         orderBy,
         where: {
           OR: [
@@ -45,7 +56,8 @@ router
   .get(
     asyncHandler(async (req, res) => {
       const { id } = req.params;
-      const product = await prisma.product.findUnique({
+
+      const product = await db.product.findUnique({
         where: { id },
         select: {
           id: true,
@@ -58,7 +70,7 @@ router
       });
 
       if (!product) {
-        return res.status(404).send({ message: "Product not found" });
+        throw (createError(404, 'Product not found'));
       }
 
       res.status(200).send(product);
@@ -67,38 +79,43 @@ router
   // 상품 수정
   .patch(
     asyncHandler(async (req, res) => {
-      assert(req.body, UpdateDto);  // UpdateDto 사용
+      assert(req.body, UpdateDto);
+
       const { id } = req.params;
-      const { name, description, price, tags } = req.body;
-      const updatedProduct = await prisma.product.update({
+
+      const updatedProduct = await db.product.update({
         where: { id },
-        data: { name, description, price, tags },
+        data: req.body,
       });
 
       res.status(200).send(updatedProduct);
     })
-  )
-  // 상품 삭제
-  .delete(
-    asyncHandler(async (req, res) => {
-      const { id } = req.params;
-      await prisma.product.delete({
-        where: { id },
-      });
-
-      res.status(200).send({ message: "Product deleted successfully" });
-    })
   );
+
+// 상품 삭제
+router.delete(
+  '/:id',
+  asyncHandler(async (req, res) => {
+    const { id } = req.params;
+
+    const deldtedProduct = await db.product.delete({
+      where: { id },
+    });
+
+    res.status(204).send({ message: "Product deleted successfully" });
+  })
+);
 
 // 상품 등록
 router
   .route("/")
   .post(
     asyncHandler(async (req, res) => {
-      assert(req.body, CreateDto);  // CreateDto 사용
+      assert(req.body, CreateDto);
 
       const { name, description, price, tags } = req.body;
-      const newProduct = await prisma.product.create({
+
+      const newProduct = await db.product.create({
         data: {
           name,
           description,
@@ -107,7 +124,7 @@ router
         },
       });
 
-      res.status(201).send(newProduct); // 201 상태 코드로 상품이 생성되었음을 알림
+      res.status(201).send(newProduct);
     })
   );
 
