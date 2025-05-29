@@ -2,21 +2,28 @@ import express from 'express';
 //import createError from 'http-errors';
 //import cors from 'cors';
 import logger from 'morgan';
+import dotenv from 'dotenv'; 
 import {notFoundHandler, errorHandler} from 'utils/asyncHandler.js';
 
 import productRouter from './routes/products.js';
 import articleRouter from './routes/articles.js';
 import commentRouter from './routes/comments.js';
 
+dotenv.config();
+
 const app = express();
+
 app.use(express.json());
+if (process.env.NODE_ENV === 'development') {
+  app.use(logger('dev')); 
+}
 
 app.use("/product", productRouter);
 app.use("/article", articleRouter);
 app.use("/comment", commentRouter);
 
-app.use(notFoundHandler); // 404 에러 핸들러
-app.use(errorHandler); // 일반 에러 핸들러
+app.use(notFoundHandler); 
+app.use(errorHandler); 
 
 
 app.listen(process.env.PORT, () => {

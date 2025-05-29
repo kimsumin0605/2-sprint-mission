@@ -2,7 +2,7 @@ import { object, string, size, number, array, optional} from "superstruct";
 
 
 export const CreateDto = object({
-    name: nonempty(size(string(), 1, 30)),
+    name: string().min(1).max(30),
     description: string(),
     price: number().min(0),
     tags: array(string()),
