@@ -101,5 +101,5 @@ export const deleteArticle = asyncHandler(async (req, res) => {
     where: { id: parseInt(id) },
   });
 
-  res.status(200).send({ message: 'Article deleted successfully' });
+  res.status(204);
 });

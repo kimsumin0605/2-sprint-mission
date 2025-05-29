@@ -105,5 +105,5 @@ export const deleteProduct = asyncHandler(async (req, res) => {
     where: { id },
   });
 
-  res.status(204).send({ message: "Product deleted successfully" });
+  res.status(204);
 });
