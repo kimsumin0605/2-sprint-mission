@@ -5,6 +5,7 @@ import fs from 'fs';
 import { fileURLToPath } from 'url';
 import { db } from '../utils/db.js';
 import { asyncHandler } from '../utils/asyncHandler.js';
+import createError from 'http-errors';
 
 const router = express.Router();
 
@@ -17,12 +18,12 @@ if (!fs.existsSync(uploadDir)) {
 
 const upload = multer({ dest: uploadDir });
 
-router.post('/upload', upload.single('file'), asyncHandler(async (req, res) => {
+router.post('/upload', upload.single('file'), asyncHandler(async (req, res, next) => {
   if (!req.file) {
-    return res.status(400).json({ error: 'No file uploaded' });
+    return next(createError(400, 'No file uploaded'));
   }
 
-  const { originalname, filename } = req.file;
+  const { originalname, filename, mimetype, size } = req.file;
   const extension = path.extname(originalname);
   const newFileName = `${Date.now()}_${filename}${extension}`;
   const newFilePath = path.join(uploadDir, newFileName);
@@ -31,9 +32,9 @@ router.post('/upload', upload.single('file'), asyncHandler(async (req, res) => {
 
   const file = await db.document.create({
     data: {
-      filename: originalname,
-      mimetype: req.file.mimetype,
-      size: req.file.size,
+      fileName: originalname,              
+      mimeType: mimetype,                  
+      size,
       url: `/uploads/${newFileName}`,
     },
   });
@@ -41,20 +42,51 @@ router.post('/upload', upload.single('file'), asyncHandler(async (req, res) => {
   res.json({ message: 'File uploaded successfully', file });
 }));
 
-router.get('/:id', asyncHandler(async (req, res) => {
+router.post('/upload-by-url', asyncHandler(async (req, res, next) => {
+  const { imageUrl } = req.body;
+  if (!imageUrl) {
+    return next(createError(400, 'imageUrl is required'));
+  }
+
+  const response = await fetch(imageUrl);
+  if (!response.ok) {
+    return next(createError(400, 'Failed to download image'));
+  }
+
+  const arrayBuffer = await response.arrayBuffer();
+  const buffer = Buffer.from(arrayBuffer);
+  const ext = path.extname(new URL(imageUrl).pathname) || '.jpg';
+  const newFileName = `${Date.now()}_downloaded${ext}`;
+  const newFilePath = path.join(uploadDir, newFileName);
+
+  await fs.promises.writeFile(newFilePath, buffer);
+
+  const file = await db.document.create({
+    data: {
+      fileName: newFileName,                          
+      mimeType: response.headers.get('content-type') || 'image/jpeg',
+      size: buffer.length,
+      url: `/uploads/${newFileName}`,
+    },
+  });
+
+  res.json({ message: 'Image downloaded and saved', file });
+}));
+
+router.get('/:id', asyncHandler(async (req, res, next) => {
   const doc = await db.document.findUnique({ where: { id: Number(req.params.id) } });
   if (!doc) {
-    return res.status(404).json({ error: 'File not found' });
+    return next(createError(404, 'File not found'));
   }
 
   const filePath = path.resolve(uploadDir, doc.url.split('/').pop());
-  res.download(filePath, doc.filename);
+  res.download(filePath, doc.fileName); 
 }));
 
-router.delete('/:id', asyncHandler(async (req, res) => {
+router.delete('/:id', asyncHandler(async (req, res, next) => {
   const doc = await db.document.findUnique({ where: { id: Number(req.params.id) } });
   if (!doc) {
-    return res.status(404).json({ error: 'File not found' });
+    return next(createError(404, 'File not found'));
   }
 
   const filePath = path.resolve(uploadDir, doc.url.split('/').pop());

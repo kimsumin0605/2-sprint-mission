@@ -26,7 +26,7 @@ app.use("/comments", commentRouter);
 
 const __dirname = path.dirname(new URL(import.meta.url).pathname); 
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
-app.use('/upload', uploadRouter); 
+app.use('/documents', uploadRouter); 
 
 app.use(notFoundHandler); 
 app.use(errorHandler); 
