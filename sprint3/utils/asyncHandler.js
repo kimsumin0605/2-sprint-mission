@@ -1,5 +1,10 @@
 import createError from 'http-errors';
-import { PrismaClientKnownRequestError, PrismaClientValidationError, PrismaClientUnknownRequestError } from '@prisma/client';
+import pkg from '@prisma/client';
+
+const { PrismaClientKnownRequestError, PrismaClientValidationError, PrismaClientUnknownRequestError } = pkg;
+
+const asyncHandler = (fn) => (req, res, next) =>
+  Promise.resolve(fn(req, res, next)).catch(next);
 
 const notFoundHandler = (req, res, next) => {
   next(createError(404, 'Not Found'));
@@ -7,9 +12,9 @@ const notFoundHandler = (req, res, next) => {
 
 const errorHandler = (err, req, res, next) => {
   res.locals.message = err.message;
-  res.locals.error = req.app.get('env') === 'development' ? err : {}; 
+  res.locals.error = req.app.get('env') === 'development' ? err : {};
 
-  
+
   if (err instanceof PrismaClientKnownRequestError && err.code === 'P2025') {
     return res.status(404).send({ message: 'Resource not found' });
   }
@@ -25,4 +30,4 @@ const errorHandler = (err, req, res, next) => {
   res.status(err.status || 500).send({ message: err.message });
 };
 
-export { notFoundHandler, errorHandler };
+export { asyncHandler, notFoundHandler, errorHandler };

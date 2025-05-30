@@ -1,7 +1,7 @@
-import { db } from 'utils/db.js';
+import {db} from '../utils/db.js';
 import { assert} from 'superstruct';
-import { CreateCommentDto, UpdateCommentDto } from '../dtos/comments.dto.js';
-import asyncHandler from 'utils/asyncHandler.js';
+import { CreateCommentDto } from '../dtos/comments.dto.js';
+import {asyncHandler}  from '../utils/asyncHandler.js';
 
 
 export const createComment = asyncHandler(async (req, res) => {

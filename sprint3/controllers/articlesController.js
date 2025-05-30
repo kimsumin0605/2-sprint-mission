@@ -1,8 +1,8 @@
-import { db } from 'utils/db';
+import {db} from '../utils/db.js';
 import { assert } from 'superstruct';
-import { CreateArticleDto, UpdateArticleDto } from 'dtos/articles.dto';
-import { validatePagination } from 'utils/validatePagination';
-import asyncHandler from 'utils/asyncHandler';
+import { CreateArticleDto, UpdateArticleDto } from '../dtos/articles.dto.js';
+import { validatePagination } from '../utils/validatePagination.js';
+import { asyncHandler }  from '../utils/asyncHandler.js';
 
 export const getArticles = asyncHandler(async (req, res) => {
   const { offset = 0, limit = 10, order = 'recent', search = '' } = req.query;

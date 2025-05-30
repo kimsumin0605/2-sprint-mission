@@ -1,8 +1,8 @@
-import { db } from 'utils/db.js';
+import {db} from '../utils/db.js';
 import { assert } from 'superstruct';
-import { CreateDto, UpdateDto } from '../products.dto.js';
-import { validatePagination } from 'utils/validatePagination.js';
-import asyncHandler from 'utils/asyncHandler.js';
+import { CreateDto, UpdateDto } from '../dtos/products.dto.js';
+import { validatePagination } from '../utils/validatePagination.js';
+import { asyncHandler } from '../utils/asyncHandler.js';
 import createError from 'http-errors';
 
 // 상품 목록 조회
