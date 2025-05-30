@@ -1,6 +1,6 @@
 node_modules/
-generated/prisma/
+sprint3/generated/prisma/
 *.env
-uploads/
+sprint3/uploads/
 sprint1-2/
 
