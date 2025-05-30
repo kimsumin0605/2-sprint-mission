@@ -3,6 +3,7 @@ import { assert } from 'superstruct';
 import { CreateDto, UpdateDto } from '../products.dto.js';
 import { validatePagination } from 'utils/validatePagination.js';
 import asyncHandler from 'utils/asyncHandler.js';
+import createError from 'http-errors';
 
 // 상품 목록 조회
 export const getProducts = asyncHandler(async (req, res) => {
