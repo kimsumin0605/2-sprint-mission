@@ -28,6 +28,10 @@ const __dirname = path.dirname(new URL(import.meta.url).pathname);
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 app.use('/documents', uploadRouter); 
 
+app.get("/", (req, res) => {
+  res.send("🎉 배포 성공! API 서버가 정상 작동 중입니다.");
+});
+
 app.use(notFoundHandler); 
 app.use(errorHandler); 
 
