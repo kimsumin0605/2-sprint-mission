@@ -44,13 +44,11 @@ export const logout = withAsync(async (req, res) => {
 
 export const refreshTokens = withAsync(async (req, res) => {
   const user = req.user;
-  const dbUser = await userRepository.findById(user.id);
   const currentRefresh = req.cookies['refresh-token'];
 
-  if (!dbUser || dbUser.refreshToken !== currentRefresh) {
-    return res.status(401).json({ message: '유효하지 않은 리프레시 토큰입니다.' });
+  if (user.refreshToken !== currentRefresh) {
+    return res.status(401).json({ message: '유효하지 않은 refresh-token입니다.' });
   }
-
   const { accessToken, refreshToken } = authService.generateAuthTokens(user.id);
   await userRepository.updateUser(user.id, { refreshToken });
 

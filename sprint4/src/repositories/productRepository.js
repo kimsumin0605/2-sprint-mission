@@ -29,7 +29,16 @@ export async function getById(id) {
 }
 
 export async function getAll() {
-  return prisma.product.findMany();
+  return prisma.product.findMany({
+    select: {
+      id: true,
+      name: true,
+      description: true,
+      price: true,
+      authorId: true
+    },
+    orderBy: { createdAt: 'desc' },
+  });
 }
 
 export async function update(id, data) {
@@ -66,6 +75,7 @@ export async function getComments(productId, cursor, limit) {
     cursor: cursor ? { id: cursor } : undefined,
     take: limit + 1,
     where: { productId },
+    orderBy: { createdAt: 'desc' },
   });
 }
 

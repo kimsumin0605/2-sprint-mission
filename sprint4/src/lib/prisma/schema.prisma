@@ -81,4 +81,8 @@ model Like {
 
   @@unique([userId, productId])
   @@unique([userId, articleId])
+  
+  @@index([userId])
+  @@index([productId])
+  @@index([articleId])
 }
