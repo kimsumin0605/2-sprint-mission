@@ -14,7 +14,7 @@ import { withAsync } from '../lib/withAsync.js';
 
 export const createProduct = withAsync(async (req, res) => {
   const productData = create(req.body, CreateProductBodyStruct);
-  const newProduct = await productService.createProductService({
+  const newProduct = await productService.createProduct({
     ...productData,
     authorId: req.user.id,
   });
@@ -27,31 +27,31 @@ export const createProduct = withAsync(async (req, res) => {
 export const getProduct = withAsync(async (req, res) => {
   const { id } = create(req.params, IdParamsStruct);
   const userId = req.user?.id ?? null;
-  const product = await productService.getProductByIdService(id, userId);
+  const product = await productService.getProductById(id, userId);
   res.send(product);
 });
 
 export const updateProduct = withAsync(async (req, res) => {
   const { id } = create(req.params, IdParamsStruct);
   const updateData = create(req.body, UpdateProductBodyStruct);
-  const updated = await productService.updateProductService(id, updateData);
+  const updated = await productService.updateProduct(id, updateData);
   res.send(updated);
 });
 
 export const deleteProduct = withAsync(async (req, res) => {
   const { id } = create(req.params, IdParamsStruct);
-  await productService.deleteProductService(id);
+  await productService.deleteProduct(id);
   res.status(204).send();
 });
 
 export const getProductList = withAsync(async (req, res) => {
   const query = create(req.query, GetProductListParamsStruct);
-  const result = await productService.getAllProductsService(query);
+  const result = await productService.getAllProducts(query);
   res.send(result);
 });
 
 export const getMyProducts = withAsync(async (req, res) => {
-  const products = await productService.getMyProductsService(req.user.id);
+  const products = await productService.getMyProducts(req.user.id);
   res.status(200).json(products);
 });
 
@@ -59,7 +59,7 @@ export const createComment = withAsync(async (req, res) => {
   const { id: productId } = create(req.params, IdParamsStruct);
   const { content } = create(req.body, CreateCommentBodyStruct);
 
-  const comment = await productService.addCommentToProductService({
+  const comment = await productService.addCommentToProduct({
     productId,
     content,
     authorId: req.user.id,
@@ -72,6 +72,6 @@ export const getCommentList = withAsync(async (req, res) => {
   const { id: productId } = create(req.params, IdParamsStruct);
   const { cursor, limit } = create(req.query, GetCommentListParamsStruct);
 
-  const result = await productService.getProductCommentsService(productId, cursor, limit);
+  const result = await productService.getProductComments(productId, cursor, limit);
   res.send(result);
 });

@@ -3,7 +3,7 @@ import { userRepository } from '../repositories/userRepository.js';
 import NotFoundError from '../lib/errors/NotFoundError.js';
 import BadRequestError from '../lib/errors/BadRequestError.js';
 
-export async function getMeService(userId) {
+export async function getMe(userId) {
   const user = await userRepository.findById(userId);
   if (!user) throw new NotFoundError('User', userId);
 
@@ -11,13 +11,13 @@ export async function getMeService(userId) {
   return safeUser;
 }
 
-export async function updateUserService(userId, updateData) {
+export async function updateUser(userId, updateData) {
   const updatedUser = await userRepository.updateUser(userId, updateData);
   const { password, ...safeUser } = updatedUser;
   return safeUser;
 }
 
-export async function changePasswordService(userId, currentPassword, newPassword) {
+export async function changePassword(userId, currentPassword, newPassword) {
   const user = await userRepository.findById(userId);
   if (!user) throw new NotFoundError('유저', userId);
 

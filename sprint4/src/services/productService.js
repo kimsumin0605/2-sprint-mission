@@ -2,11 +2,11 @@ import { productRepository } from '../repositories/productRepository.js';
 import { likeRepository } from '../repositories/likeRepository.js';
 import NotFoundError from '../lib/errors/NotFoundError.js';
 
-export async function createProductService(productData) {
+export async function createProduct(productData) {
   return await productRepository.save(productData);
 }
 
-export async function getProductByIdService(id, userId = null) {
+export async function getProductById(id, userId = null) {
   const product = await productRepository.getById(id);
   if (!product) throw new NotFoundError('Product', id);
 
@@ -20,11 +20,11 @@ export async function getProductByIdService(id, userId = null) {
   return { ...product, isLiked };
 }
 
-export async function getAllProductsService() {
+export async function getAllProducts() {
   return await productRepository.getAll();
 }
 
-export async function updateProductService(productId, updateData) {
+export async function updateProduct(productId, updateData) {
   const exists = await productRepository.getById(productId);
   if (!exists) throw new NotFoundError('Product', productId);
 
@@ -32,22 +32,22 @@ export async function updateProductService(productId, updateData) {
   return updated;
 }
 
-export async function deleteProductService(productId) {
+export async function deleteProduct(productId) {
   const exists = await productRepository.getById(productId);
   if (!exists) throw new NotFoundError('Product', productId);
 
   await productRepository.deleteById(productId);
 }
 
-export async function getMyProductsService(userId) {
+export async function getMyProducts(userId) {
   return await productRepository.findByAuthorId(userId);
 }
 
-export async function addCommentToProductService(commentData) {
+export async function addCommentToProduct(commentData) {
   return await productRepository.createComment(commentData);
 }
 
-export async function getProductCommentsService(productId, cursor, limit = 10) {
+export async function getProductComments(productId, cursor, limit = 10) {
   const exists = await productRepository.getById(productId);
   if (!exists) throw new NotFoundError('Product', productId);
 
