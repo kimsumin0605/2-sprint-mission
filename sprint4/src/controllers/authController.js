@@ -21,9 +21,11 @@ export const register = withAsync(async (req, res, next) => {
 });
 
 export const login = withAsync(async (req, res) => {
-  const user = req.user;
+  const{email , password} = req.user;
+
+  const user = await authService.loginUser(email, password);
   if (!user) {
-    return res.status(401).json({ message: '인증 실패' });
+    return res.status(401).json({ message: '잘못된 이메일 또는 비밀번호입니다. 아이디와 비밀번호를 정확히 입력해 주세요.' });
   }
 
   const { accessToken, refreshToken } = authService.generateAuthTokens(user.id);

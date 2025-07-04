@@ -21,6 +21,16 @@ export async function registerUser({ email, nickname, password }) {
   return user;
 }
 
+export async function loginUser(email, password) {
+  const user = await userRepository.findByEmail(email);
+  if (!user) return null;
+
+  const isMatch = await bcrypt.compare(password, user.password);
+  if (!isMatch) return null;
+
+  return user;
+}
+
 export function generateAuthTokens(userId) {
   return generateTokens(userId);
 }
