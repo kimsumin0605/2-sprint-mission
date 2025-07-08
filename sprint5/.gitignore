@@ -1,0 +1,19 @@
+# Local files
+.vscode/
+node_modules/
+.env*
+!.env.example
+
+# Uploaded files
+public/*
+!public/.gitkeep
+
+# test files
+tests/
+
+# swwagger files
+swagger.yaml
+
+dist/
+src/lib/prisma/migrations
+tsconfig.base.json
