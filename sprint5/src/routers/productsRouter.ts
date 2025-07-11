@@ -6,24 +6,20 @@ import {
   updateProduct,
   deleteProduct,
   getProductList,
-  createComment,
-  getCommentList,
   getMyProducts,
 } from '../controllers/productsController';
-import { authenticate } from '../middlewares/authenticate';
+import { verifyAccessToken } from '../middlewares/passport';
 
 const productsRouter = express.Router();
 
 productsRouter.get('/', withAsync(getProductList));
-productsRouter.get('/:id/comments', withAsync(getCommentList));
 productsRouter.get('/:id', withAsync(getProduct));
 
-productsRouter.use(authenticate.verifyAccessToken);
+productsRouter.use(verifyAccessToken);
 
 productsRouter.post('/', withAsync(createProduct));
-productsRouter.post('/:id/comments', withAsync(createComment));
-productsRouter.patch('/:id', authenticate.verifyProductAuth, withAsync(updateProduct));
-productsRouter.delete('/:id', authenticate.verifyProductAuth, withAsync(deleteProduct));
+productsRouter.patch('/:id', withAsync(updateProduct));
+productsRouter.delete('/:id', withAsync(deleteProduct));
 productsRouter.get('/me', withAsync(getMyProducts));
 
 export default productsRouter;

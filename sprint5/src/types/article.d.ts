@@ -13,3 +13,10 @@ export type ArticleListQuery = {
   keyword?: string;
 };
 
+export interface UpdateArticleInput {
+  title?: string;
+  content?: string;
+  image?: string | null;
+  tags?: string[];
+}
+

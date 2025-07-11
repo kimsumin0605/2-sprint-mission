@@ -1,24 +1,38 @@
 import { create } from 'superstruct';
-import * as commentService from '../services/commentService'
+import * as commentService from '../services/commentService';
 import { CreateCommentBodyStruct, UpdateCommentBodyStruct } from '../structs/commentsStruct';
 import { withAsync } from '../lib/withAsync';
 import { Request, Response } from 'express';
-import { CreateCommentInput } from '../types/comment';
 import { requireUser } from '../lib/assertUser';
 
-export const createComment = withAsync(async (req: Request, res: Response) => {
+export const createProductComment = withAsync(async (req: Request, res: Response) => {
   const { id } = req.params;
   const { content } = create(req.body, CreateCommentBodyStruct);
   const user = requireUser(req);
 
-  const input: CreateCommentInput = {
+  const input = {
     content,
     authorId: user.id,
-    articleId: req.baseUrl.includes('articles') ? parseInt(id, 10) : undefined,
-    productId: req.baseUrl.includes('products') ? parseInt(id, 10) : undefined,
+    productId: parseInt(id, 10),
   };
 
-  const comment = await commentService.createComment(input);
+  const comment = await commentService.ProductComment(input);
+
+  res.status(201).json(comment);
+});
+
+export const createArticleComment = withAsync(async (req: Request, res: Response) => {
+  const { id } = req.params;
+  const { content } = create(req.body, CreateCommentBodyStruct);
+  const user = requireUser(req);
+
+  const input = {
+    content,
+    authorId: user.id,
+    articleId: parseInt(id, 10),
+  };
+
+  const comment = await commentService.ArticleComment(input);
 
   res.status(201).json(comment);
 });
@@ -29,14 +43,23 @@ export const getCommentList = withAsync(async (req: Request, res: Response) => {
 });
 
 export const updateComment = withAsync(async (req: Request, res: Response) => {
-  const { id } = req.params;
-  const { content } = create(req.body, UpdateCommentBodyStruct);
+  const { id } = req.params; 
+  const user = requireUser(req); 
 
-  if (!content) {
-    throw new Error('내용을 입력하세요.');
+  const updateData = create(req.body, UpdateCommentBodyStruct);
+
+  if (!updateData.content) {
+    res.status(400).json({ message: '내용을 입력하세요.' });
+    return;
   }
-  const updated = await commentService.updateComment(parseInt(id, 10), content);
-  res.json(updated);
+
+  const updatedComment = await commentService.updateComment(
+    parseInt(id, 10),
+    updateData,
+    user.id
+  );
+
+  res.status(200).json(updatedComment);
 });
 
 export const deleteComment = withAsync(async (req: Request, res: Response) => {

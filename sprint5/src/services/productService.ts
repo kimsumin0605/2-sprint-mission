@@ -1,13 +1,13 @@
 import { productRepository } from '../repositories/productRepository';
 import { likeRepository } from '../repositories/likeRepository';
 import NotFoundError from '../lib/errors/NotFoundError';
+import { ForbiddenError } from '../lib/errors/BadRequestError';
 import { CreateProductInput } from '../types/product';
-import { CreateCommentInput } from '../types/comment';
-import { Prisma, Product, Comment } from '@prisma/client';
+import { Prisma, Product } from '@prisma/client';
 import { PageParamsStruct } from '../structs/commonStructs';
 
 export async function createProduct(productData: CreateProductInput): Promise<Product> {
-  return await productRepository.save(productData);
+  return await productRepository.createProduct(productData);
 }
 
 export async function getProductById(id: number, userId?: number | null) {
@@ -32,41 +32,31 @@ export async function getAllProducts(params: typeof PageParamsStruct.TYPE) {
   });
 }
 
-export async function updateProduct(productId: number, updateData: Prisma.ProductUpdateInput) {
-  const exists = await productRepository.getById(productId);
-  if (!exists) throw new NotFoundError('Product', productId);
+export async function updateProduct(
+  productId: number,
+  updateData: Prisma.ProductUpdateInput,
+  userId: number
+) {
+  const product = await productRepository.getById(productId);
+  if (!product) throw new NotFoundError('상품', productId);
 
-  const updated = await productRepository.update(productId, updateData);
-  return updated;
+  if (product.authorId !== userId) {
+    throw new ForbiddenError('상품을 수정할 권한이 없습니다.');
+  }
+
+  return await productRepository.update(productId, updateData);
 }
 
 export async function deleteProduct(productId: number) {
   const exists = await productRepository.getById(productId);
   if (!exists) throw new NotFoundError('Product', productId);
 
-  await productRepository.deleteById(productId);
+  await productRepository.deleteProduct(productId);
 }
 
 export async function getMyProducts(userId: number) {
   return await productRepository.findByAuthorId(userId);
 }
 
-export async function addCommentToProduct(commentData: CreateCommentInput) {
-  return await productRepository.createComment(commentData);
-}
 
-export async function getProductComments(
-  productId: number,
-  cursor?: number,
-  limit: number = 10
-): Promise<{ comments: Comment[]; hasNextPage: boolean }> {
-  const exists = await productRepository.getById(productId);
-  if (!exists) throw new NotFoundError('Product', productId);
-
-  const comments = await productRepository.getComments(productId, cursor, limit);
-  const hasNextPage = comments.length > limit;
-
-  if (hasNextPage) comments.pop();
-  return { comments, hasNextPage };
-}
 

@@ -2,17 +2,21 @@ import bcrypt from 'bcrypt';
 import { userRepository } from '../repositories/userRepository';
 import NotFoundError from '../lib/errors/NotFoundError';
 import { BadRequestError } from '../lib/errors/BadRequestError';
-import { Prisma } from '@prisma/client';
 
 export async function getMe(userId: number) {
   const user = await userRepository.findById(userId);
-  if (!user) throw new NotFoundError('User', userId);
+  if (!user) throw new NotFoundError('유저', userId);
 
   const { password, ...safeUser } = user;
   return safeUser;
 }
 
-export async function updateUser(userId: number, updateData: Prisma.UserUpdateInput) {
+export interface UpdateUserInput {
+  nickname?: string;
+  image?: string;
+}
+
+export async function updateUser(userId: number, updateData:UpdateUserInput) {
   const updatedUser = await userRepository.updateUser(userId, updateData);
   const { password, ...safeUser } = updatedUser;
   return safeUser;

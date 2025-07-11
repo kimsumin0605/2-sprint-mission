@@ -18,6 +18,8 @@ interface JwtPayload {
   exp: number;
 }
 
+export const verifyAccessToken = passport.authenticate('access-token', { session: false });
+
 passport.use(
   'local',
   new LocalStrategy(

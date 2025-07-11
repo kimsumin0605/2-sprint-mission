@@ -1,9 +1,8 @@
 import { Prisma } from '@prisma/client';
 import prisma from '../lib/prismaClient';
 import { CreateProductInput } from '../types/product';
-import { CreateCommentInput } from '../types/comment';
 
-export async function save(product: CreateProductInput) {
+export async function createProduct(product: CreateProductInput) {
   return prisma.product.create({
     data: {
       name: product.name,
@@ -53,7 +52,7 @@ export async function update(id: number, data: Prisma.ProductUpdateInput) {
   });
 }
 
-export async function deleteById(id: number) {
+export async function deleteProduct(id: number) {
   return prisma.product.delete({
     where: { id },
   });
@@ -65,34 +64,11 @@ export async function findByAuthorId(userId: number) {
   });
 }
 
-export async function createComment(comment: CreateCommentInput) {
-  return prisma.comment.create({
-    data: {
-      content: comment.content,
-      author: { connect: { id: comment.authorId } },
-      ...(comment.productId && {
-        product: { connect: { id: comment.productId } },
-      }),
-    },
-  });
-}
-
-export async function getComments(productId: number, cursor?: number, limit?: number | undefined) {
-  return prisma.comment.findMany({
-    cursor: cursor ? { id: cursor } : undefined,
-    take: limit ? + 1 : undefined,
-    where: { productId },
-    orderBy: { createdAt: 'desc' },
-  });
-}
-
 export const productRepository = {
-  save,
+  createProduct,
   getById,
   getAll,
   update,
-  deleteById,
+  deleteProduct,
   findByAuthorId,
-  createComment,
-  getComments
 };

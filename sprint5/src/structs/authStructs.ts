@@ -12,6 +12,6 @@ export const ChangePasswordStruct = object({
 });
 
 export const UpdateUserStruct = object({
-  ninkname: optional(size(string(), 2, 10)),
+  nickname: optional(size(string(), 2, 10)),
   image: optional(string()),
 });

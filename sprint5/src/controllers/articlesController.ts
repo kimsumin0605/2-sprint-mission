@@ -32,12 +32,14 @@ export const getArticleList = withAsync(async (req: Request, res: Response) => {
   res.json(articles);
 });
 
-export const updateArticle = withAsync(async (req: Request, res: Response) => {
+export const updateArticle = withAsync(async (req, res) => {
   const { id } = create(req.params, IdParamsStruct);
-  const data = create(req.body, UpdateArticleBodyStruct);
-  const updated = await articleService.updateArticle(id, data);
-  res.json(updated);
-});
+  const updateData = create(req.body, UpdateArticleBodyStruct);
+  const user = requireUser(req); 
+
+  const updated = await articleService.updateArticle(id, updateData, user.id);
+  res.send(updated);
+})
 
 export const deleteArticle = withAsync(async (req: Request, res: Response) => {
   const { id } = create(req.params, IdParamsStruct);

@@ -7,17 +7,17 @@ import {
   updateArticle,
   deleteArticle,
 } from '../controllers/articlesController';
-import { authenticate } from '../middlewares/authenticate';
+import { verifyAccessToken } from '../middlewares/passport';
 
 const articlesRouter = express.Router();
 
 articlesRouter.get('/', withAsync(getArticleList));
 articlesRouter.get('/:id', withAsync(getArticle));
 
-articlesRouter.use(authenticate.verifyAccessToken);
+articlesRouter.use(verifyAccessToken);
 
 articlesRouter.post('/', withAsync(createArticle));
-articlesRouter.patch('/:id', authenticate.verifyArticleAuth, withAsync(updateArticle));
-articlesRouter.delete('/:id', authenticate.verifyArticleAuth, withAsync(deleteArticle));
+articlesRouter.patch('/:id', withAsync(updateArticle));
+articlesRouter.delete('/:id', withAsync(deleteArticle));
 
 export default articlesRouter;

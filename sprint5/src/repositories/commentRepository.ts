@@ -1,22 +1,24 @@
 import prisma from '../lib/prismaClient';
 import { CreateCommentInput } from '../types/comment';
 
-export async function save(comment: CreateCommentInput) {
-  const createdComment = await prisma.comment.create({
+export async function ProductComment(input: CreateCommentInput) {
+  return prisma.comment.create({
     data: {
-      content: comment.content,
-      author: {
-        connect: { id: comment.authorId },
-      },
-      ...(comment.productId && {
-        product: { connect: { id: comment.productId } },
-      }),
-      ...(comment.articleId && {
-        article: { connect: { id: comment.articleId } },
-      }),
+      content: input.content,
+      author: { connect: { id: input.authorId } },
+      product: { connect: { id: input.productId! } }, 
     },
   });
-  return createdComment;
+}
+
+export async function ArticleComment(input: CreateCommentInput) {
+  return prisma.comment.create({
+    data: {
+      content: input.content,
+      author: { connect: { id: input.authorId } },
+      article: { connect: { id: input.articleId! } }, 
+    },
+  });
 }
 
 export async function getById(id: number) {
@@ -29,10 +31,10 @@ export async function getAll() {
   return prisma.comment.findMany();
 }
 
-export async function update(id: number, content: string) {
+export async function update(id: number, data: {content?: string}) {
   return prisma.comment.update({
     where: { id },
-    data: { content },
+    data,
   });
 }
 
@@ -43,7 +45,8 @@ export async function deleteById(id: number) {
 }
 
 export const commentRepository = {
-  save,
+  ProductComment,
+  ArticleComment,
   getById,
   getAll,
   update,

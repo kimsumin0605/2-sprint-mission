@@ -6,11 +6,11 @@ import {
   getLikedProducts,
   getLikedArticles,
 } from '../controllers/likeController';
-import { authenticate } from '../middlewares/authenticate';
+import { verifyAccessToken } from '../middlewares/passport';
 
 const likesRouter = express.Router();
 
-likesRouter.use(authenticate.verifyAccessToken);
+likesRouter.use(verifyAccessToken);
 
 likesRouter.post('/articles/:id', withAsync(toggleArticleLike));
 likesRouter.post('/products/:id', withAsync(toggleProductLike));

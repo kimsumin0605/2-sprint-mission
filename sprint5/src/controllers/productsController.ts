@@ -3,10 +3,6 @@ import {
   GetProductListParamsStruct,
   UpdateProductBodyStruct,
 } from '../structs/productsStruct';
-import {
-  CreateCommentBodyStruct,
-  GetCommentListParamsStruct,
-} from '../structs/commentsStruct';
 import { create } from 'superstruct';
 import { IdParamsStruct } from '../structs/commonStructs';
 import * as productService from '../services/productService';
@@ -34,10 +30,12 @@ export const getProduct = withAsync(async (req: Request, res: Response) => {
   res.send(product);
 });
 
-export const updateProduct = withAsync(async (req: Request, res: Response) => {
+export const updateProduct = withAsync(async (req, res) => {
   const { id } = create(req.params, IdParamsStruct);
   const updateData = create(req.body, UpdateProductBodyStruct);
-  const updated = await productService.updateProduct(id, updateData);
+  const user = requireUser(req); 
+
+  const updated = await productService.updateProduct(id, updateData, user.id);
   res.send(updated);
 });
 
@@ -57,26 +55,4 @@ export const getMyProducts = withAsync(async (req, res) => {
   const user = requireUser(req);
   const products = await productService.getMyProducts(user.id);
   res.status(200).json(products);
-});
-
-export const createComment = withAsync(async (req, res) => {
-  const user = requireUser(req);
-  const { id: productId } = create(req.params, IdParamsStruct);
-  const { content } = create(req.body, CreateCommentBodyStruct);
-
-  const comment = await productService.addCommentToProduct({
-    productId,
-    content,
-    authorId: user.id,
-  });
-
-  res.status(201).send(comment);
-});
-
-export const getCommentList = withAsync(async (req, res) => {
-  const { id: productId } = create(req.params, IdParamsStruct);
-  const { cursor, limit } = create(req.query, GetCommentListParamsStruct);
-
-  const result = await productService.getProductComments(productId, cursor, limit);
-  res.send(result);
 });

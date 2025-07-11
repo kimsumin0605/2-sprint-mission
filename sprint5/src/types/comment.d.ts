@@ -4,3 +4,6 @@ export type CreateCommentInput = {
   productId?: number;
   articleId?: number;
 }
+export interface UpdateCommentInput {
+  content?: string;
+}
