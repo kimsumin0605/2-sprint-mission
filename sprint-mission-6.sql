@@ -64,15 +64,13 @@ WHERE name LIKE '%Cheese%' OR name LIKE '%Chicken%';
 
 -- 1. `order_details` 테이블에서 각 피자(`pizza_id`)별로 주문된 건 수(`order_id`)를 보여주세요.
 
-SELECT OD.pizza_id pizza_name , 
-	     COUNT(OD.order_id) total_count 
+SELECT OD.pizza_id pizza_name , COUNT(OD.order_id) total_count 
 FROM order_details OD
 GROUP BY OD.pizza_id;
 
 -- 2. `order_details` 테이블에서 각 피자(`pizza_id`)별로 총 주문 수량을 구하세요.
 
-SELECT OD.pizza_id pizza_name , 
-	     SUM(OD.quantity) AS total_quantity 
+SELECT OD.pizza_id pizza_name , SUM(OD.quantity) AS total_quantity 
 FROM order_details OD
 GROUP BY OD.pizza_id;
 
@@ -89,8 +87,7 @@ WHERE id IN (
 -- 4. `orders` 테이블에서 각 날짜별 총 주문 건수를 `order_count` 라는 이름으로 계산하고, 
 -- 하루 총 주문 건수가 80건 이상인 날짜만 조회한 뒤, 주문 건수가 많은 순서대로 정렬하세요.
 
-SELECT date, 
-	     COUNT(id) AS order_count 
+SELECT date, COUNT(id) AS order_count 
 FROM orders 
 GROUP BY date
 HAVING COUNT(*)>=80
@@ -99,8 +96,7 @@ ORDER BY order_count DESC;
 -- 5. `order_details` 테이블에서 피자별(`pizza_id`) 총 주문 수량이 10개 이상인 피자만 조회하고,
 -- 총 주문 수량 기준으로 내림차순 정렬하세요.
 
-SELECT pizza_id, 
-	     SUM(quantity) AS total_quantity
+SELECT pizza_id, SUM(quantity) AS total_quantity
 FROM order_details
 GROUP BY pizza_id
 HAVING SUM(quantity) >= 10
@@ -108,17 +104,14 @@ ORDER BY total_quantity DESC;
 
 -- 6. `order_details` 테이블에서 피자별 총 수익을 `total_revenue` 라는 이름으로 구하세요. (수익 = `quantity * price`)
 
-SELECT pizza_id ,
-	     SUM(P.price * OD.quantity) AS total_revenue
+SELECT pizza_id ,SUM(P.price * OD.quantity) AS total_revenue
 FROM order_details OD
 JOIN pizzas P ON OD.pizza_id = P.id
 GROUP BY OD.pizza_id;
 
 -- 7. 날짜별로 피자 주문 건수(`order_count`)와 총 주문 수량(`total_quantity`)을 구하세요.
 
-SELECT O.date, 
-	     COUNT(*) AS order_count,
-	     SUM(OD.quantity) AS total_quantity
+SELECT O.date, COUNT(*) AS order_count, SUM(OD.quantity) AS total_quantity
 FROM orders O
 JOIN order_details OD ON OD.order_id = O.id
 GROUP BY O.date
@@ -130,14 +123,13 @@ ORDER BY O.date DESC;
     --1. 피자별(`pizzas.id` 기준) 판매 수량 순위에서 피자별 판매 수량 상위에 드는 베스트 피자를 10개를 조회해 주세요. 
 	-- `pizzas`의 모든 컬럼을 조회하면서 각 피자에 해당하는 판매량을 `total_quantity`라는 이름으로 함께 조회합니다.
 	
-		SELECT P.*, 
-			     SUM(OD.quantity) AS total_quantity
-		FROM pizzas P
-		JOIN pizza_types PT ON PT.id = P.type_id
-		JOIN order_details OD ON OD.pizza_id = P.id
-		GROUP BY P.id
-		ORDER BY total_quantity DESC
-		LIMIT 10;
+SELECT P.*, SUM(OD.quantity) AS total_quantity
+FROM pizzas P
+JOIN pizza_types PT ON PT.id = P.type_id
+JOIN order_details OD ON OD.pizza_id = P.id
+GROUP BY P.id
+ORDER BY total_quantity DESC
+LIMIT 10;
 	
 		/*
         출력 예시:
@@ -160,15 +152,15 @@ ORDER BY O.date DESC;
     --2. `orders` 테이블에서 2025년 3월의 일별 주문 수량을 `total_orders`라는 이름으로, 
 	-- 일별 총 주문 금액을 `total_amount`라는 이름으로 포함해서 조회하세요.
 	
-		SELECT O.date, 
-			     COUNT(*) AS total_orders,
-			     SUM(OD.quantity * P.price) AS total_amount
-		FROM orders O
-		JOIN order_details OD ON OD.order_id = O.id
-		JOIN pizzas P ON P.id = OD.pizza_id
-		WHERE O.date BETWEEN '2025-03-01' AND '2025-03-31'
-		GROUP BY O.date
-		ORDER BY o.date ASC;
+SELECT O.date, 
+	COUNT(*) AS total_orders,
+	SUM(OD.quantity * P.price) AS total_amount
+FROM orders O
+JOIN order_details OD ON OD.order_id = O.id
+JOIN pizzas P ON P.id = OD.pizza_id
+WHERE O.date BETWEEN '2025-03-01' AND '2025-03-31'
+GROUP BY O.date
+ORDER BY o.date ASC;
         
 		/*
         출력 예시:
@@ -186,16 +178,16 @@ ORDER BY O.date DESC;
 	--주문 내역에서 각각 주문한 피자의 이름을 `pizza_name`, 피자의 크기를 `pizza_size`, 피자 가격을 `pizza_price`, 
 	--수량을 `quantity`, 각 주문 내역의 총 금액을 `total_amount` 라는 이름으로 조회해 주세요.
 
-		SELECT 	OD.order_id,
-				    PT.name AS pizza_name, 
-				    P.size AS pizza_size, 
-				    P.price AS pizza_price,
-				    OD.quantity AS quantity,
-				   (OD.quantity * P.price) AS total_amount
-		FROM order_details  OD
-		JOIN pizzas P ON OD.pizza_id = P.id
-		JOIN pizza_types PT ON PT.id = P.type_id
-		WHERE OD.order_id = 78;
+SELECT 	OD.order_id,
+	PT.name AS pizza_name, 
+	P.size AS pizza_size, 
+	P.price AS pizza_price,
+	OD.quantity AS quantity,
+	(OD.quantity * P.price) AS total_amount
+FROM order_details  OD
+JOIN pizzas P ON OD.pizza_id = P.id
+JOIN pizza_types PT ON PT.id = P.type_id
+WHERE OD.order_id = 78;
 		
 		/*
         출력 예시:
@@ -213,12 +205,11 @@ ORDER BY O.date DESC;
    
     --4. `order_details`와 `pizzas` 테이블을 JOIN해서 피자 크기별(S, M, L) 총 수익을 계산하고, 크기별 수익을 출력하세요.
 
-		SELECT P.size,
-			     SUM(OD.quantity * P.price) AS total_price
-		FROM pizzas P
-		JOIN order_details OD ON OD.pizza_id = P.id
-		GROUP BY P.size
-		ORDER bY total_price DESC;
+SELECT P.size, SUM(OD.quantity * P.price) AS total_price
+FROM pizzas P
+JOIN order_details OD ON OD.pizza_id = P.id
+GROUP BY P.size
+ORDER bY total_price DESC;
 
 		/* 
         출력 예시:
@@ -235,13 +226,12 @@ ORDER BY O.date DESC;
     --5. `order_details`, `pizzas`, `pizza_types` 테이블을 JOIN해서 각 피자 종류의 총 수익을 계산하고, 
 	--수익이 높은 순서대로 출력하세요.
 
-		SELECT PT.name AS pizza_name,
-			     SUM(P.price * OD.quantity) AS total_revenue
-		FROM pizzas P
-		JOIN order_details OD ON OD.pizza_id = P.id
-		JOIN pizza_types PT ON PT.id = P.type_id
-		GROUP BY PT.name
-		ORDER BY total_revenue DESC;
+SELECT PT.name AS pizza_name, SUM(P.price * OD.quantity) AS total_revenue
+FROM pizzas P
+JOIN order_details OD ON OD.pizza_id = P.id
+JOIN pizza_types PT ON PT.id = P.type_id
+GROUP BY PT.name
+ORDER BY total_revenue DESC;
 		
 		/* 
         출력 예시:
