@@ -1,48 +1,56 @@
+import { Request, Response } from "express";
+import { plainToInstance } from "class-transformer";
+import { validateOrReject } from "class-validator";
+import { ArticleService } from "../services/articleService";
 import {
-  CreateArticleBodyStruct,
-  UpdateArticleBodyStruct,
-  GetArticleListParamsStruct,
-} from '../structs/articlesStructs';
-import * as articleService from '../services/articleService';
-import { create } from 'superstruct';
-import { IdParamsStruct } from '../structs/commonStructs';
-import { withAsync } from '../lib/withAsync';
-import { Request, Response } from 'express';
-import { ArticleWithLike } from '../types/article';
-import { requireUser } from '../lib/assertUser';
+  CreateArticleDto,
+  UpdateArticleDto,
+  GetArticleListDto,
+} from "../dtos/article.dto";
 
+const articleService = new ArticleService();
 
-export const createArticle = withAsync(async (req: Request, res: Response) => {
-  const user = requireUser(req);
-  const data = create(req.body, CreateArticleBodyStruct);
-  const article = await articleService.createArticle(data, user.id);
-  res.status(201).json(article);
-});
+export class ArticleController {
+  async create(req: Request, res: Response) {
+    const user = req.user!;
+    const dto = plainToInstance(CreateArticleDto, req.body);
+    await validateOrReject(dto);
 
-export const getArticle = withAsync(async (req: Request, res: Response) => {
-  const { id } = create(req.params, IdParamsStruct);
-  const user = requireUser(req);
-  const article: ArticleWithLike = await articleService.getArticleById(id, user.id);
-  res.json(article);
-});
+    const article = await articleService.create({
+      ...dto,
+      author: { connect: { id: user.id } },
+    });
 
-export const getArticleList = withAsync(async (req: Request, res: Response) => {
-  const query = create(req.query, GetArticleListParamsStruct);
-  const articles = await articleService.getAllArticles(query);
-  res.json(articles);
-});
+    res.status(201).json(article);
+  }
 
-export const updateArticle = withAsync(async (req, res) => {
-  const { id } = create(req.params, IdParamsStruct);
-  const updateData = create(req.body, UpdateArticleBodyStruct);
-  const user = requireUser(req); 
+  async getOne(req: Request, res: Response) {
+    const id = parseInt(req.params.id, 10);
+    const userId = req.user?.id;
+    const article = await articleService.getById(id, userId);
+    res.json(article);
+  }
 
-  const updated = await articleService.updateArticle(id, updateData, user.id);
-  res.send(updated);
-})
+  async getList(req: Request, res: Response) {
+    const dto = plainToInstance(GetArticleListDto, req.query);
+    await validateOrReject(dto);
+    const list = await articleService.getList(dto);
+    res.json(list);
+  }
 
-export const deleteArticle = withAsync(async (req: Request, res: Response) => {
-  const { id } = create(req.params, IdParamsStruct);
-  await articleService.deleteArticle(id);
-  res.status(204).send();
-});
+  async update(req: Request, res: Response) {
+    const id = parseInt(req.params.id, 10);
+    const dto = plainToInstance(UpdateArticleDto, req.body);
+    await validateOrReject(dto);
+    const user = req.user!;
+
+    const updated = await articleService.update(id, dto, user.id);
+    res.json(updated);
+  }
+
+  async delete(req: Request, res: Response) {
+    const id = parseInt(req.params.id, 10);
+    await articleService.delete(id);
+    res.status(204).send();
+  }
+}

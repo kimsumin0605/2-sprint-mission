@@ -1,23 +1,26 @@
-import express from 'express';
-import { withAsync } from '../lib/withAsync';
-import {
-  createArticle,
-  getArticleList,
-  getArticle,
-  updateArticle,
-  deleteArticle,
-} from '../controllers/articlesController';
-import { verifyAccessToken } from '../middlewares/passport';
+import express from "express";
+import passport from "../middlewares/passport";
+import { ArticleController } from "../controllers/articlesController";
 
-const articlesRouter = express.Router();
+const controller = new ArticleController();
+const router = express.Router();
 
-articlesRouter.get('/', withAsync(getArticleList));
-articlesRouter.get('/:id', withAsync(getArticle));
+router.post(
+  "/",
+  passport.authenticate("access-token", { session: false }),
+  controller.create
+);
+router.get("/:id", controller.getOne);
+router.get("/", controller.getList);
+router.patch(
+  "/:id",
+  passport.authenticate("access-token", { session: false }),
+  controller.update
+);
+router.delete(
+  "/:id",
+  passport.authenticate("access-token", { session: false }),
+  controller.delete
+);
 
-articlesRouter.use(verifyAccessToken);
-
-articlesRouter.post('/', withAsync(createArticle));
-articlesRouter.patch('/:id', withAsync(updateArticle));
-articlesRouter.delete('/:id', withAsync(deleteArticle));
-
-export default articlesRouter;
+export default router;
