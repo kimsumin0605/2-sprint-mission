@@ -1,58 +1,69 @@
+import { Request, Response } from "express";
+import { plainToInstance } from "class-transformer";
+import { validateOrReject } from "class-validator";
+import { ProductService } from "../services//productService";
 import {
-  CreateProductBodyStruct,
-  GetProductListParamsStruct,
-  UpdateProductBodyStruct,
-} from '../structs/productsStruct';
-import { create } from 'superstruct';
-import { IdParamsStruct } from '../structs/commonStructs';
-import * as productService from '../services/productService';
-import { withAsync } from '../lib/withAsync';
-import { Response, Request } from 'express';
-import { requireUser } from '../lib/assertUser';
+  CreateProductDto,
+  UpdateProductDto,
+  GetProductListDto,
+} from "../dtos/product.dto";
 
-export const createProduct = withAsync(async (req: Request, res: Response) => {
-  const productData = create(req.body, CreateProductBodyStruct);
-  const user = requireUser(req);
-  const newProduct = await productService.createProduct({
-    ...productData,
-    authorId: user.id,
-  });
-  res.status(201).json({
-    message: '상품이 등록되었습니다.',
-    data: newProduct,
-  });
-});
+const productService = new ProductService();
 
-export const getProduct = withAsync(async (req: Request, res: Response) => {
-  const { id } = create(req.params, IdParamsStruct);
-  const userId = req.user?.id ?? null;
-  const product = await productService.getProductById(id, userId);
-  res.send(product);
-});
+export class ProductController {
+  async create(req: Request, res: Response) {
+    const dto = plainToInstance(CreateProductDto, req.body);
+    await validateOrReject(dto);
 
-export const updateProduct = withAsync(async (req, res) => {
-  const { id } = create(req.params, IdParamsStruct);
-  const updateData = create(req.body, UpdateProductBodyStruct);
-  const user = requireUser(req); 
+    const user = req.user!;
 
-  const updated = await productService.updateProduct(id, updateData, user.id);
-  res.send(updated);
-});
+    const product = await productService.createProduct({
+      ...dto,
+      authorId: user.id,
+    });
 
-export const deleteProduct = withAsync(async (req: Request, res: Response) => {
-  const { id } = create(req.params, IdParamsStruct);
-  await productService.deleteProduct(id);
-  res.status(204).send();
-});
+    res.status(201).json({
+      message: "상품이 등록되었습니다.",
+      data: product,
+    });
+  }
 
-export const getProductList = withAsync(async (req: Request, res: Response) => {
-  const query = create(req.query, GetProductListParamsStruct);
-  const result = await productService.getAllProducts(query);
-  res.send(result);
-});
+  async getById(req: Request, res: Response) {
+    const id = parseInt(req.params.id, 10);
+    const userId = req.user?.id ?? null;
 
-export const getMyProducts = withAsync(async (req, res) => {
-  const user = requireUser(req);
-  const products = await productService.getMyProducts(user.id);
-  res.status(200).json(products);
-});
+    const product = await productService.getProductById(id, userId);
+    res.status(200).json(product);
+  }
+
+  async update(req: Request, res: Response) {
+    const id = parseInt(req.params.id, 10);
+    const dto = plainToInstance(UpdateProductDto, req.body);
+    await validateOrReject(dto);
+
+    const user = req.user!;
+
+    const updated = await productService.updateProduct(id, dto, user.id);
+    res.status(200).json(updated);
+  }
+
+  async delete(req: Request, res: Response) {
+    const id = parseInt(req.params.id, 10);
+    await productService.deleteProduct(id);
+    res.status(204).send();
+  }
+
+  async getAll(req: Request, res: Response) {
+    const dto = plainToInstance(GetProductListDto, req.query);
+    await validateOrReject(dto);
+
+    const result = await productService.getAllProducts(dto.page, dto.pageSize);
+    res.status(200).json(result);
+  }
+
+  async getMine(req: Request, res: Response) {
+    const user = req.user!;
+    const products = await productService.getMyProducts(user.id);
+    res.status(200).json(products);
+  }
+}

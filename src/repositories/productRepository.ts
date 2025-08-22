@@ -1,74 +1,49 @@
-import { Prisma } from '@prisma/client';
-import prisma from '../lib/prismaClient';
-import { CreateProductInput } from '../types/product';
+import prisma from "../lib/prismaClient";
+import { Prisma } from "@prisma/client";
+import { CreateProductInput } from "../dtos/product.dto";
 
-export async function createProduct(product: CreateProductInput) {
-  return prisma.product.create({
-    data: {
-      name: product.name,
-      description: product.description,
-      price: product.price,
-      tags: product.tags,
-      images: product.images,
-      author: {
-        connect: { id: product.authorId },
+export class ProductRepository {
+  async create(data: CreateProductInput) {
+    return prisma.product.create({ data });
+  }
+
+  async getById(id: number) {
+    return prisma.product.findUnique({
+      where: { id },
+      select: {
+        id: true,
+        name: true,
+        description: true,
+        price: true,
+        authorId: true,
       },
-    },
-  });
-}
+    });
+  }
 
-export async function getById(id: number) {
-  return prisma.product.findUnique({
-    where: { id },
-    select: {
-      id: true,
-      name: true,
-      description: true,
-      price: true,
-      authorId: true
-    },
-  });
-}
+  async getAll({ skip = 0, take = 10 }: { skip?: number; take?: number }) {
+    return prisma.product.findMany({
+      skip,
+      take,
+      orderBy: { createdAt: "desc" },
+      select: {
+        id: true,
+        name: true,
+        description: true,
+        price: true,
+        authorId: true,
+      },
+    });
+  }
 
-export async function getAll({ skip = 0, take = 10, }: { skip?: number; take?: number }) {
-  return prisma.product.findMany({
-    skip,
-    take,
-    select: {
-      id: true,
-      name: true,
-      description: true,
-      price: true,
-      authorId: true
-    },
-    orderBy: { createdAt: 'desc' },
-  });
-}
+  async update(id: number, data: Prisma.ProductUpdateInput) {
+    return prisma.product.update({ where: { id }, data });
+  }
 
-export async function update(id: number, data: Prisma.ProductUpdateInput) {
-  return prisma.product.update({
-    where: { id },
-    data,
-  });
-}
+  async delete(id: number) {
+    return prisma.product.delete({ where: { id } });
+  }
 
-export async function deleteProduct(id: number) {
-  return prisma.product.delete({
-    where: { id },
-  });
+  async findByAuthorId(authorId: number) {
+    return prisma.product.findMany({ where: { authorId } });
+  }
 }
-
-export async function findByAuthorId(userId: number) {
-  return prisma.product.findMany({
-    where: { authorId: userId },
-  });
-}
-
-export const productRepository = {
-  createProduct,
-  getById,
-  getAll,
-  update,
-  deleteProduct,
-  findByAuthorId,
-};

@@ -1,25 +1,18 @@
-import express from 'express';
-import { withAsync } from '../lib/withAsync';
-import {
-  createProduct,
-  getProduct,
-  updateProduct,
-  deleteProduct,
-  getProductList,
-  getMyProducts,
-} from '../controllers/productsController';
-import { verifyAccessToken } from '../middlewares/passport';
+import express from "express";
+import { ProductController } from "../controllers/productsController";
+import passport from "../middlewares/passport";
 
-const productsRouter = express.Router();
+const router = express.Router();
+const productController = new ProductController();
 
-productsRouter.get('/', withAsync(getProductList));
-productsRouter.get('/:id', withAsync(getProduct));
+router.get("/", productController.getAll);
+router.get("/:id", productController.getById);
 
-productsRouter.use(verifyAccessToken);
+router.use(passport.authenticate("access-token", { session: false }));
 
-productsRouter.post('/', withAsync(createProduct));
-productsRouter.patch('/:id', withAsync(updateProduct));
-productsRouter.delete('/:id', withAsync(deleteProduct));
-productsRouter.get('/me', withAsync(getMyProducts));
+router.post("/", productController.create);
+router.patch("/:id", productController.update);
+router.delete("/:id", productController.delete);
+router.get("/me/list", productController.getMine);
 
-export default productsRouter;
+export default router;
