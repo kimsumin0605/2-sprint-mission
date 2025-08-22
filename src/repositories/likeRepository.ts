@@ -1,15 +1,15 @@
-import prisma from '../lib/prismaClient';
+import prisma from "../lib/prismaClient";
 
-export const likeRepository = {
+export class LikeRepository {
   async find(userId: number, productId?: number, articleId?: number) {
     return prisma.like.findFirst({
       where: {
         userId,
-        productId: productId || undefined,
-        articleId: articleId || undefined,
+        productId: productId ?? undefined,
+        articleId: articleId ?? undefined,
       },
     });
-  },
+  }
 
   async create(userId: number, productId?: number, articleId?: number) {
     return prisma.like.create({
@@ -19,32 +19,29 @@ export const likeRepository = {
         articleId,
       },
     });
-  },
+  }
 
   async remove(userId: number, productId?: number, articleId?: number) {
     return prisma.like.deleteMany({
       where: {
         userId,
-        productId: productId || undefined,
-        articleId: articleId || undefined,
+        productId: productId ?? undefined,
+        articleId: articleId ?? undefined,
       },
     });
-  },
+  }
 
   async findLikedProducts(userId: number) {
     return prisma.like.findMany({
       where: { userId, productId: { not: null } },
-      include: {
-        product: true,
-      },
+      include: { product: true },
     });
-  },
+  }
+
   async findLikedArticles(userId: number) {
     return prisma.like.findMany({
       where: { userId, articleId: { not: null } },
-      include: {
-        article: true,
-      },
+      include: { article: true },
     });
   }
-};
+}

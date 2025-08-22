@@ -1,34 +1,45 @@
-import { create } from 'superstruct';
-import * as likeService from '../services/likeService';
-import { IdParamsStruct } from '../structs/commonStructs';
-import { withAsync } from '../lib/withAsync';
-import { Request, Response } from 'express';
-import { requireUser } from '../lib/assertUser';
+import { Request, Response } from "express";
+import { plainToInstance } from "class-transformer";
+import { validateOrReject } from "class-validator";
+import { likeService } from "../services/likeService";
+import { ToggleLikeParamDto } from "../dtos/like.dto";
 
-export const toggleProductLike = withAsync(async (req: Request, res: Response) => {
-  const user = requireUser(req);
-  const { id: productId } = create(req.params, IdParamsStruct);
-  const result = await likeService.toggleLike({ userId: user.id, productId });
-  res.status(200).json(result);
-});
+export class LikeController {
+  async toggleProductLike(req: Request, res: Response) {
+    const user = req.user!;
+    const dto = plainToInstance(ToggleLikeParamDto, req.params);
+    await validateOrReject(dto);
 
-export const toggleArticleLike = withAsync(async (req: Request, res: Response) => {
-  const user = requireUser(req);
-  const { id: articleId } = create(req.params, IdParamsStruct);
-  const result = await likeService.toggleLike({ userId: user.id, articleId });
-  res.status(200).json(result);
-});
+    const result = await likeService.toggleLike({
+      userId: user.id,
+      productId: dto.id,
+    });
 
-export const getLikedProducts = withAsync(async (req: Request, res: Response) => {
-  const user = requireUser(req);
-  const likes = await likeService.getLikedProductsByUser(user.id);
-  res.json(likes);
-});
+    res.status(200).json(result);
+  }
 
-export const getLikedArticles = withAsync(async (req: Request, res: Response) => {
-  const user = requireUser(req);
-  const likes = await likeService.getLikedArticlesByUser(user.id);
-  res.json(likes);
-});
+  async toggleArticleLike(req: Request, res: Response) {
+    const user = req.user!;
+    const dto = plainToInstance(ToggleLikeParamDto, req.params);
+    await validateOrReject(dto);
 
+    const result = await likeService.toggleLike({
+      userId: user.id,
+      articleId: dto.id,
+    });
 
+    res.status(200).json(result);
+  }
+
+  async getLikedProducts(req: Request, res: Response) {
+    const user = req.user!;
+    const likes = await likeService.getLikedProductsByUser(user.id);
+    res.json(likes);
+  }
+
+  async getLikedArticles(req: Request, res: Response) {
+    const user = req.user!;
+    const likes = await likeService.getLikedArticlesByUser(user.id);
+    res.json(likes);
+  }
+}

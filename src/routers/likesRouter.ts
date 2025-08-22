@@ -1,20 +1,15 @@
-import express from 'express';
-import { withAsync } from '../lib/withAsync';
-import {
-  toggleArticleLike,
-  toggleProductLike,
-  getLikedProducts,
-  getLikedArticles,
-} from '../controllers/likeController';
-import { verifyAccessToken } from '../middlewares/passport';
+import express from "express";
+import { LikeController } from "../controllers/likeController";
+import { verifyAccessToken } from "../middlewares/passport";
 
 const likesRouter = express.Router();
+const likeController = new LikeController();
 
 likesRouter.use(verifyAccessToken);
 
-likesRouter.post('/articles/:id', withAsync(toggleArticleLike));
-likesRouter.post('/products/:id', withAsync(toggleProductLike));
-likesRouter.get('/products', withAsync(getLikedProducts));
-likesRouter.get('/articles', withAsync(getLikedArticles));
+likesRouter.post("/articles/:id", likeController.toggleArticleLike);
+likesRouter.post("/products/:id", likeController.toggleProductLike);
+likesRouter.get("/products", likeController.getLikedProducts);
+likesRouter.get("/articles", likeController.getLikedArticles);
 
 export default likesRouter;
