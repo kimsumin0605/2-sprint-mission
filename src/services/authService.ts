@@ -1,50 +1,58 @@
-import { userRepository } from '../repositories/userRepository';
-import bcrypt from 'bcrypt';
-import { generateTokens } from '../utils/token';
-import { setTokenCookies, clearTokenCookies } from '../utils/cookie';
-import { ConflictError } from '../lib/errors/BadRequestError';
-import { Response } from 'express'
+import bcrypt from "bcrypt";
+import { UserRepository } from "../repositories/userRepository";
+import { generateTokens } from "../utils/token";
+import { setTokenCookies, clearTokenCookies } from "../utils/cookie";
+import { ConflictError } from "../lib/errors/BadRequestError";
+import { Response } from "express";
 
-interface RegisterUserInput {
-  email: string;
-  nickname: string;
-  password: string;
-}
+const userRepository = new UserRepository();
 
-export async function registerUser({ email, nickname, password }: RegisterUserInput) {
-  const existingUser = await userRepository.findByEmail(email);
-  if (existingUser) {
-    throw new ConflictError('이미 가입된 이메일입니다');
+export class AuthService {
+  async registerUser(data: {
+    email: string;
+    nickname: string;
+    password: string;
+  }) {
+    const existingUser = await userRepository.findByEmail(data.email);
+    if (existingUser) throw new ConflictError("이미 가입된 이메일입니다");
+
+    const hashedPassword = await bcrypt.hash(data.password, 10);
+    const user = await userRepository.createUser({
+      email: data.email,
+      nickname: data.nickname,
+      password: hashedPassword,
+    });
+
+    return user;
   }
 
-  const hashedPassword = await bcrypt.hash(password, 10);
-  const user = await userRepository.createUser({
-    email,
-    nickname,
-    password: hashedPassword,
-  });
+  async loginUser(email: string, password: string) {
+    const user = await userRepository.findByEmail(email);
+    if (!user) return null;
 
-  return user;
-}
+    const isMatch = await bcrypt.compare(password, user.password);
+    if (!isMatch) return null;
 
-export async function loginUser(email: string, password: string) {
-  const user = await userRepository.findByEmail(email);
-  if (!user) return null;
+    return user;
+  }
 
-  const isMatch = await bcrypt.compare(password, user.password);
-  if (!isMatch) return null;
+  generateAuthTokens(userId: number) {
+    return generateTokens(userId);
+  }
 
-  return user;
-}
+  async logoutUser(userId: number) {
+    await userRepository.updateUser(userId, { refreshToken: undefined });
+  }
 
-export function generateAuthTokens(userId: number) {
-  return generateTokens(userId);
-}
+  async updateRefreshToken(userId: number, refreshToken: string) {
+    await userRepository.updateUser(userId, { refreshToken });
+  }
 
-export function setTokensInCookies(res: Response, accessToken: string, refreshToken: string) {
-  return setTokenCookies(res, accessToken, refreshToken);
-}
+  setTokensInCookies(res: Response, accessToken: string, refreshToken: string) {
+    setTokenCookies(res, accessToken, refreshToken);
+  }
 
-export function clearTokensFromCookies(res: Response) {
-  return clearTokenCookies(res);
+  clearTokensFromCookies(res: Response) {
+    clearTokenCookies(res);
+  }
 }
