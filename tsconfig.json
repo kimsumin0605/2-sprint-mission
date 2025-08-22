@@ -7,9 +7,11 @@
     "moduleResolution": "node",
     "baseUrl": "./",
     "typeRoots": ["./node_modules/@types", "./src/types"],
-    "types": ["node", "express"],
+    "types": [],
     "resolveJsonModule": true,
     "esModuleInterop": true,
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true,
     "forceConsistentCasingInFileNames": true,
     "strict": true,
     "noImplicitAny": true,
@@ -17,6 +19,6 @@
     "removeComments": true,
     "skipLibCheck": true,
   },
-  "include": ["src/**/*"],
+  "include": ["src/**/*", "src/testSocket.ts"],
   "exclude": ["node_modules"]
 }
