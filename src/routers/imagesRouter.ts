@@ -1,9 +1,13 @@
-import express from 'express';
-import { withAsync } from '../lib/withAsync';
-import { upload, uploadImage } from '../controllers/imagesController';
+import express from "express";
+import { ImageController } from "../controllers/imagesController";
 
+const imageController = new ImageController();
 const imagesRouter = express.Router();
 
-imagesRouter.post('/upload', upload.single('image'), withAsync(uploadImage));
+imagesRouter.post(
+  "/upload",
+  imageController.upload.single("image"),
+  imageController.uploadImage
+);
 
 export default imagesRouter;
