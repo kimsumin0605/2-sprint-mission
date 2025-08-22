@@ -1,54 +1,47 @@
-import prisma from '../lib/prismaClient';
-import { CreateCommentInput } from '../types/comment';
+import prisma from "../lib/prismaClient";
 
-export async function ProductComment(input: CreateCommentInput) {
-  return prisma.comment.create({
-    data: {
-      content: input.content,
-      author: { connect: { id: input.authorId } },
-      product: { connect: { id: input.productId! } }, 
-    },
-  });
+export class CommentRepository {
+  async createForProduct(input: {
+    content: string;
+    authorId: number;
+    productId: number;
+  }) {
+    return prisma.comment.create({
+      data: {
+        content: input.content,
+        author: { connect: { id: input.authorId } },
+        product: { connect: { id: input.productId } },
+      },
+    });
+  }
+
+  async createForArticle(input: {
+    content: string;
+    authorId: number;
+    articleId: number;
+  }) {
+    return prisma.comment.create({
+      data: {
+        content: input.content,
+        author: { connect: { id: input.authorId } },
+        article: { connect: { id: input.articleId } },
+      },
+    });
+  }
+
+  async getById(id: number) {
+    return prisma.comment.findUnique({ where: { id } });
+  }
+
+  async getAll() {
+    return prisma.comment.findMany();
+  }
+
+  async update(id: number, data: { content: string }) {
+    return prisma.comment.update({ where: { id }, data });
+  }
+
+  async deleteById(id: number) {
+    return prisma.comment.delete({ where: { id } });
+  }
 }
-
-export async function ArticleComment(input: CreateCommentInput) {
-  return prisma.comment.create({
-    data: {
-      content: input.content,
-      author: { connect: { id: input.authorId } },
-      article: { connect: { id: input.articleId! } }, 
-    },
-  });
-}
-
-export async function getById(id: number) {
-  return prisma.comment.findUnique({
-    where: { id },
-  });
-}
-
-export async function getAll() {
-  return prisma.comment.findMany();
-}
-
-export async function update(id: number, data: {content?: string}) {
-  return prisma.comment.update({
-    where: { id },
-    data,
-  });
-}
-
-export async function deleteById(id: number) {
-  return prisma.comment.delete({
-    where: { id },
-  });
-}
-
-export const commentRepository = {
-  ProductComment,
-  ArticleComment,
-  getById,
-  getAll,
-  update,
-  deleteById,
-};

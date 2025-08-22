@@ -1,69 +1,68 @@
-import { create } from 'superstruct';
-import * as commentService from '../services/commentService';
-import { CreateCommentBodyStruct, UpdateCommentBodyStruct } from '../structs/commentsStruct';
-import { withAsync } from '../lib/withAsync';
-import { Request, Response } from 'express';
-import { requireUser } from '../lib/assertUser';
+import { Request, Response } from "express";
+import { plainToInstance } from "class-transformer";
+import { validateOrReject } from "class-validator";
+import { CommentService } from "../services/commentService";
+import { CreateCommentDto, UpdateCommentDto } from "../dtos/comment.dto";
 
-export const createProductComment = withAsync(async (req: Request, res: Response) => {
-  const { id } = req.params;
-  const { content } = create(req.body, CreateCommentBodyStruct);
-  const user = requireUser(req);
+const commentService = new CommentService();
 
-  const input = {
-    content,
-    authorId: user.id,
-    productId: parseInt(id, 10),
-  };
+export class CommentController {
+  async createProductComment(req: Request, res: Response) {
+    const user = req.user!;
+    const { id } = req.params;
 
-  const comment = await commentService.ProductComment(input);
+    const dto = plainToInstance(CreateCommentDto, req.body);
+    await validateOrReject(dto);
 
-  res.status(201).json(comment);
-});
+    const comment = await commentService.createProductComment({
+      content: dto.content,
+      authorId: user.id,
+      productId: parseInt(id, 10),
+    });
 
-export const createArticleComment = withAsync(async (req: Request, res: Response) => {
-  const { id } = req.params;
-  const { content } = create(req.body, CreateCommentBodyStruct);
-  const user = requireUser(req);
-
-  const input = {
-    content,
-    authorId: user.id,
-    articleId: parseInt(id, 10),
-  };
-
-  const comment = await commentService.ArticleComment(input);
-
-  res.status(201).json(comment);
-});
-
-export const getCommentList = withAsync(async (req: Request, res: Response) => {
-  const comments = await commentService.getAllComments();
-  res.json(comments);
-});
-
-export const updateComment = withAsync(async (req: Request, res: Response) => {
-  const { id } = req.params; 
-  const user = requireUser(req); 
-
-  const updateData = create(req.body, UpdateCommentBodyStruct);
-
-  if (!updateData.content) {
-    res.status(400).json({ message: '내용을 입력하세요.' });
-    return;
+    res.status(201).json(comment);
   }
 
-  const updatedComment = await commentService.updateComment(
-    parseInt(id, 10),
-    updateData,
-    user.id
-  );
+  async createArticleComment(req: Request, res: Response) {
+    const user = req.user!;
+    const { id } = req.params;
 
-  res.status(200).json(updatedComment);
-});
+    const dto = plainToInstance(CreateCommentDto, req.body);
+    await validateOrReject(dto);
 
-export const deleteComment = withAsync(async (req: Request, res: Response) => {
-  const { id } = req.params;
-  await commentService.deleteComment(parseInt(id, 10));
-  res.status(204).send();
-});
+    const comment = await commentService.createArticleComment({
+      content: dto.content,
+      authorId: user.id,
+      articleId: parseInt(id, 10),
+    });
+
+    res.status(201).json(comment);
+  }
+
+  async getCommentList(req: Request, res: Response) {
+    const comments = await commentService.getAllComments();
+    res.json(comments);
+  }
+
+  async updateComment(req: Request, res: Response) {
+    const user = req.user!;
+    const { id } = req.params;
+
+    const dto = plainToInstance(UpdateCommentDto, req.body);
+    await validateOrReject(dto);
+
+    const comment = await commentService.updateComment(
+      parseInt(id, 10),
+      user.id,
+      dto.content
+    );
+
+    res.status(200).json(comment);
+  }
+
+  async deleteComment(req: Request, res: Response) {
+    const { id } = req.params;
+    await commentService.deleteComment(parseInt(id, 10));
+    res.status(204).send();
+  }
+}

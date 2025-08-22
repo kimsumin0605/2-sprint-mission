@@ -1,27 +1,16 @@
-import express from 'express';
-import { withAsync } from '../lib/withAsync';
-import {
-  createArticleComment,
-  createProductComment,
-  getCommentList,
-  updateComment,
-  deleteComment,
-} from '../controllers/commentsController';
-import passport from '../middlewares/passport';
+import express from "express";
+import { CommentController } from "../controllers/commentsController";
+import passport from "../middlewares/passport";
 
-const commentsRouter = express.Router();
+const router = express.Router();
+const commentController = new CommentController();
 
-commentsRouter.use(passport.authenticate('access-token', { session: false }));
+router.use(passport.authenticate("access-token", { session: false }));
 
-commentsRouter.get('/', withAsync(getCommentList));
+router.post("/products/:id/comments", commentController.createProductComment);
+router.post("/articles/:id/comments", commentController.createArticleComment);
+router.get("/comments", commentController.getCommentList);
+router.patch("/comments/:id", commentController.updateComment);
+router.delete("/comments/:id", commentController.deleteComment);
 
-// 게시글 댓글 생성
-commentsRouter.post('/articles/:id', withAsync(createArticleComment));
-
-// 상품 댓글 생성
-commentsRouter.post('/products/:id', withAsync(createProductComment));
-
-commentsRouter.patch('/:id', withAsync(updateComment));
-commentsRouter.delete('/:id', withAsync(deleteComment));
-
-export default commentsRouter;
+export default router;
