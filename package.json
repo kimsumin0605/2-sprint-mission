@@ -10,7 +10,8 @@
     "dev": "nodemon --watch src --ext ts --exec ts-node --files src/server.ts",
     "start": "node dist/server.js",
     "migrate": "prisma migrate dev --schema=src/lib/prisma/schema.prisma",
-    "seed": "ts-node src/lib/prisma/seed.ts"
+    "seed": "ts-node src/lib/prisma/seed.ts",
+    "test": "jest"
   },
   "keywords": [],
   "author": "",
