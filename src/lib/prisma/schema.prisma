@@ -89,7 +89,7 @@ model Like {
 
 model Notification {
   id        Int      @id @default(autoincrement())
-  type      String
+  type      NotificationType
   message   String
   data      String?
   isRead    Boolean  @default(false)
