@@ -36,9 +36,11 @@ export class ArticleService {
     return articleRepository.update(id, data);
   }
 
-  async delete(id: number) {
+  async delete(id: number, userId: number) {
     const exists = await articleRepository.getById(id);
     if (!exists) throw new NotFoundError("Article", id);
+    if (exists.authorId !== userId)
+      throw new ForbiddenError("삭제 권한이 없습니다.");
     return articleRepository.delete(id);
   }
 }
