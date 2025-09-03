@@ -2,12 +2,12 @@
   "compilerOptions": {
     "target": "es2016",
     "module": "commonjs",
-    "rootDir": "src",
+    "rootDir": "./",
     "outDir": "dist",
     "moduleResolution": "node",
     "baseUrl": "./",
     "typeRoots": ["./node_modules/@types", "./src/types"],
-    "types": [],
+    "types": ["jest"],
     "resolveJsonModule": true,
     "esModuleInterop": true,
     "experimentalDecorators": true,
@@ -19,6 +19,6 @@
     "removeComments": true,
     "skipLibCheck": true,
   },
-  "include": ["src/**/*", "src/testSocket.ts"],
+  "include": ["src/**/*", "src/testSocket.ts", "test/**/*"],
   "exclude": ["node_modules"]
 }

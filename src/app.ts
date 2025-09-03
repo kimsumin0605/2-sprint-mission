@@ -14,6 +14,7 @@ import authRouter from './routers/authRouter';
 import likesRouter from './routers/likesRouter';
 import notificationRouter from './routers/notificationRouter';
 import { defaultNotFoundHandler, globalErrorHandler } from './controllers/errorController';
+import passport from 'passport';
 
 dotenv.config();
 const app = express();
@@ -23,8 +24,11 @@ app.use(logger('dev'));
 app.use(cookieParser());
 app.use(cors());
 app.use(express.json());
+app.use(passport.initialize());
 
-app.use('/static', express.static(path.resolve(process.cwd())));
+const STATIC_PATH = process.env.STATIC_PATH || '/static';
+const PUBLIC_PATH = process.env.PUBLIC_PATH || 'public';
+app.use(STATIC_PATH, express.static(path.resolve(process.cwd(), PUBLIC_PATH)));
 
 app.use('/auth', authRouter);
 app.use('/users', usersRouter);

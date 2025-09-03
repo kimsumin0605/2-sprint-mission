@@ -5,21 +5,11 @@ import { AuthController } from "../controllers/authController";
 const authController = new AuthController();
 const authRouter = express.Router();
 
+const authenticate = passport.authenticate("access-token", { session: false });
+
 authRouter.post("/register", authController.register);
-authRouter.post(
-  "/login",
-  passport.authenticate("local", { session: false }),
-  authController.login
-);
-authRouter.post(
-  "/refresh",
-  passport.authenticate("refresh-token", { session: false }),
-  authController.refreshTokens
-);
-authRouter.post(
-  "/logout",
-  passport.authenticate("access-token", { session: false }),
-  authController.logout
-);
+authRouter.post("/login", authController.login);
+authRouter.post("/refresh", authenticate, authController.refreshTokens);
+authRouter.post("/logout", authenticate, authController.logout);
 
 export default authRouter;

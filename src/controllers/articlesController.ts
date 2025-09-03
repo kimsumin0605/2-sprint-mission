@@ -50,7 +50,8 @@ export class ArticleController {
 
   async delete(req: Request, res: Response) {
     const id = parseInt(req.params.id, 10);
-    await articleService.delete(id);
+    const user = req.user!;
+    await articleService.delete(id, user.id);
     res.status(204).send();
   }
 }
