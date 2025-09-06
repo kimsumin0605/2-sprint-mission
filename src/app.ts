@@ -39,6 +39,10 @@ app.use('/images', imagesRouter);
 app.use('/likes', likesRouter);
 app.use('/notifications', notificationRouter);
 
+app.get('/', (req, res) => {
+  res.send('서버 정상 작동 중!');
+});
+
 app.use(defaultNotFoundHandler);
 app.use(globalErrorHandler);
 
