@@ -11,7 +11,8 @@
     "start": "node dist/server.js",
     "migrate": "prisma migrate dev --schema=src/lib/prisma/schema.prisma",
     "seed": "ts-node src/lib/prisma/seed.ts",
-    "test": "jest --runInBand"
+    "test": "jest --runInBand",
+    "typecheck": "tsc --noEmit"
   },
   "keywords": [],
   "author": "",
