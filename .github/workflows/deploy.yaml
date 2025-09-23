@@ -1,0 +1,44 @@
+name: panda-market Deploy 🚀
+
+on:
+  push:
+    branches: [ main ]
+
+concurrency:
+  group: ec2-deploy
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20.x
+
+      - name: Deploy to EC2 with appleboy ssh-action
+        uses: appleboy/ssh-action@v0.1.6 
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ec2-user
+          key: ${{ secrets.EC2_SSH_KEY }}
+          script: |
+            set -xe
+
+            REPO_NAME=$(basename -s .git $(git config --get remote.origin.url) || echo "panda-market")
+
+            cd /home/ec2-user/$REPO_NAME || {
+              git clone git@github.com:${{ github.repository }}.git $REPO_NAME
+              cd $REPO_NAME
+            }
+            git pull origin main
+            npm ci
+            npx prisma generate --schema=src/lib/prisma/schema.prisma
+            npx prisma migrate deploy --schema=src/lib/prisma/schema.prisma
+            npm run build
+            pm2 startOrReload /home/ec2-user/$REPO_NAME/infra/ec2/ecosystem.config.js --env production

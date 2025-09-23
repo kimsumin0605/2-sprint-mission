@@ -1,0 +1,8 @@
+node_modules/
+src/lib/prisma/
+.env
+dist/
+
+.gitignore
+Dokkerfile
+docker-compose.yml

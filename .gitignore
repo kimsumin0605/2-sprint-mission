@@ -1,0 +1,8 @@
+# Local files
+.vscode/
+node_modules/
+.env*
+!.env.example
+
+dist/
+src/lib/prisma/migrations
